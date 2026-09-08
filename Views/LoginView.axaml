@@ -1,0 +1,43 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:EService.ViewModels"
+             x:Class="EService.Views.LoginView"
+             x:DataType="vm:LoginViewModel">
+
+    <!-- Full-screen soft gradient background with a centered login card -->
+    <Grid>
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                <GradientStop Color="#EFF0EF" Offset="0" />
+                <GradientStop Color="#EFF0EF" Offset="1" />
+            </LinearGradientBrush>
+        </Grid.Background>
+
+        <Border Classes="card" Width="380" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <StackPanel Spacing="20">
+
+                <Image Source="/Assets/userpagelogo.jpeg" Height="90" HorizontalAlignment="Center"
+                       Stretch="Uniform" />
+
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Bienvenido" Classes="h1" HorizontalAlignment="Center" />
+                    <TextBlock Text="Ingrese su código de empleado para continuar"
+                               Classes="subtle" HorizontalAlignment="Center"
+                               TextWrapping="Wrap" TextAlignment="Center" />
+                </StackPanel>
+
+                <TextBox x:Name="CodigoBox"
+                         Text="{Binding Codigo}"
+                         Watermark="Código de acceso"
+                         FontSize="18"
+                         HorizontalContentAlignment="Center" />
+
+                <Button Content="Ingresar" Classes="primary" Command="{Binding LoginCommand}"
+                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                        FontSize="15" />
+
+            </StackPanel>
+        </Border>
+    </Grid>
+
+</UserControl>

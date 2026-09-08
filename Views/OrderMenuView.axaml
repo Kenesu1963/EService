@@ -1,0 +1,148 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:EService.ViewModels"
+             x:Class="EService.Views.OrderMenuView"
+             x:DataType="vm:OrderMenuViewModel"
+             x:Name="RootControl"
+             x:CompileBindings="False">
+             <!-- CompileBindings is turned off just in this file: the dish
+                  cards below are generated from a list (via DataTemplate),
+                  and each card's "Add to cart" button needs to reach back
+                  up to a command that lives on THIS screen's ViewModel, not
+                  the dish's own (much smaller) ViewModel. Classic bindings
+                  make that "reach up to the parent" much simpler to read
+                  than compiled bindings would here. -->
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- Top bar -->
+        <Border Grid.Row="0" Background="{StaticResource BrushPrimary}" Padding="16,12">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <Button Grid.Column="0" Classes="nav" Command="{Binding HomeCommand}" Content="🏠 Inicio" />
+
+                <TextBlock Grid.Column="1" Text="Menú de Pedidos" Foreground="White"
+                           FontSize="20" FontWeight="SemiBold"
+                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+
+                <Button Grid.Column="2" Classes="primary" Command="{Binding TerminarPedidoCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="🛒 Terminar pedido" />
+                        <Border Background="{StaticResource BrushAccent}" CornerRadius="10"
+                                Padding="8,2" MinWidth="20">
+                            <TextBlock Text="{Binding CantidadEnCarrito}" HorizontalAlignment="Center"
+                                       FontWeight="Bold" />
+                        </Border>
+                    </StackPanel>
+                </Button>
+            </Grid>
+        </Border>
+
+        <!-- Menu tabs -->
+        <TabControl Grid.Row="1" Margin="16">
+
+            <TabItem Header="Platos Fuertes">
+                <ScrollViewer>
+                    <ItemsControl ItemsSource="{Binding PlatosFuertes}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Classes="dish" Width="170" Margin="6"
+                                        Command="{Binding DataContext.AgregarAlCarritoCommand, ElementName=RootControl}"
+                                        CommandParameter="{Binding}">
+                                    <StackPanel Spacing="6">
+                                        <Image Source="{Binding Icono}" Height="90" Stretch="Uniform" />
+                                        <TextBlock Text="{Binding Nombre}" TextWrapping="Wrap"
+                                                   FontWeight="SemiBold" TextAlignment="Center" />
+                                        <TextBlock Text="{Binding PrecioTexto}" Classes="subtle"
+                                                   HorizontalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </TabItem>
+
+            <TabItem Header="Entradas">
+                <ScrollViewer>
+                    <ItemsControl ItemsSource="{Binding Entradas}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Classes="dish" Width="170" Margin="6"
+                                        Command="{Binding DataContext.AgregarAlCarritoCommand, ElementName=RootControl}"
+                                        CommandParameter="{Binding}">
+                                    <StackPanel Spacing="6">
+                                        <Image Source="{Binding Icono}" Height="90" Stretch="Uniform" />
+                                        <TextBlock Text="{Binding Nombre}" TextWrapping="Wrap"
+                                                   FontWeight="SemiBold" TextAlignment="Center" />
+                                        <TextBlock Text="{Binding PrecioTexto}" Classes="subtle"
+                                                   HorizontalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </TabItem>
+
+            <TabItem Header="Postres">
+                <ScrollViewer>
+                    <ItemsControl ItemsSource="{Binding Postres}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Classes="dish" Width="170" Margin="6"
+                                        Command="{Binding DataContext.AgregarAlCarritoCommand, ElementName=RootControl}"
+                                        CommandParameter="{Binding}">
+                                    <StackPanel Spacing="6">
+                                        <Image Source="{Binding Icono}" Height="90" Stretch="Uniform" />
+                                        <TextBlock Text="{Binding Nombre}" TextWrapping="Wrap"
+                                                   FontWeight="SemiBold" TextAlignment="Center" />
+                                        <TextBlock Text="{Binding PrecioTexto}" Classes="subtle"
+                                                   HorizontalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </TabItem>
+
+            <TabItem Header="Bebidas">
+                <ScrollViewer>
+                    <ItemsControl ItemsSource="{Binding Bebidas}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Classes="dish" Width="170" Margin="6"
+                                        Command="{Binding DataContext.AgregarAlCarritoCommand, ElementName=RootControl}"
+                                        CommandParameter="{Binding}">
+                                    <StackPanel Spacing="6">
+                                        <Image Source="{Binding Icono}" Height="90" Stretch="Uniform" />
+                                        <TextBlock Text="{Binding Nombre}" TextWrapping="Wrap"
+                                                   FontWeight="SemiBold" TextAlignment="Center" />
+                                        <TextBlock Text="{Binding PrecioTexto}" Classes="subtle"
+                                                   HorizontalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </TabItem>
+
+        </TabControl>
+    </Grid>
+
+</UserControl>

@@ -1,0 +1,13 @@
+<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="EService.MainWindow" x:CompileBindings="False" Title="E-Service" Width="1200" Height="780" MinWidth="1000" MinHeight="650" WindowStartupLocation="CenterScreen" Background="{DynamicResource BrushBackground}" Icon="/Assets/app-icon.png">
+
+    <!--
+        This is the ONLY Window in the whole application. Every screen from
+        the original Java version (login, lobby, order menu, manager
+        dashboard, inventory, etc.) is a UserControl that gets swapped in
+        and out of this single ContentControl, based on whatever ViewModel
+        is currently set as CurrentPage. See ViewLocator.cs for how a
+        ViewModel becomes the matching View automatically.
+    -->
+    <ContentControl Content="{Binding CurrentPage}" />
+
+</Window>

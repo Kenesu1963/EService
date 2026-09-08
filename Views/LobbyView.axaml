@@ -1,0 +1,32 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:EService.ViewModels"
+             x:Class="EService.Views.LobbyView"
+             x:DataType="vm:LobbyViewModel">
+
+    <Grid Background="{DynamicResource BrushBackground}">
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="24" Width="420">
+
+            <Image Source="/Assets/userpagelogo.jpeg" Height="80" Stretch="Uniform" />
+
+            <StackPanel Spacing="4">
+                <TextBlock Text="{Binding CurrentUserCode, StringFormat='Sesión activa: {0}'}"
+                           Classes="subtle" HorizontalAlignment="Center" />
+                <TextBlock Text="¿A dónde deseas ir?" Classes="h1" HorizontalAlignment="Center" />
+            </StackPanel>
+
+            <Border Classes="card">
+                <StackPanel Spacing="12">
+                    <Button Content="Panel de Gerente" Classes="primary" Command="{Binding GoToManagerCommand}"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
+                    <Button Content="Tomar Pedidos" Classes="secondary" Command="{Binding GoToServerCommand}"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
+                    <Button Content="Cerrar sesión" Classes="danger" Command="{Binding LogoutCommand}"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+    </Grid>
+
+</UserControl>

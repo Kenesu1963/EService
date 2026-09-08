@@ -1,0 +1,19 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:EService"
+             x:Class="EService.App"
+             RequestedThemeVariant="Light">
+             <!-- "RequestedThemeVariant" can be "Light", "Dark" or "Default"
+                  (follow the OS). Change this one line to switch the whole
+                  app's theme. -->
+
+  <Application.DataTemplates>
+    <local:ViewLocator />
+  </Application.DataTemplates>
+
+  <Application.Styles>
+    <FluentTheme />
+    <StyleInclude Source="avares://EService/Styles.axaml" />
+  </Application.Styles>
+
+</Application>

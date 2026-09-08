@@ -1,0 +1,87 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:EService.ViewModels"
+             xmlns:models="using:EService.Models"
+             x:Class="EService.Views.AddPurchaseView"
+             x:DataType="vm:AddPurchaseViewModel"
+             x:CompileBindings="False">
+
+    <Grid RowDefinitions="Auto,*" Background="{DynamicResource BrushBackground}">
+
+        <Border Grid.Row="0" Background="{StaticResource BrushPrimary}" Padding="16,12">
+            <TextBlock Text="Registrar Compra de Insumos" Foreground="White" FontSize="20"
+                       FontWeight="SemiBold" HorizontalAlignment="Center" />
+        </Border>
+
+        <Grid Grid.Row="1" ColumnDefinitions="380,*" Margin="20">
+
+            <!-- Left: add-a-line form -->
+            <Border Grid.Column="0" Classes="card" Margin="0,0,10,0" VerticalAlignment="Top">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Agregar Insumo" Classes="h2" />
+
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Insumo" Classes="subtle" />
+                        <ComboBox ItemsSource="{Binding InsumosDisponibles}"
+                                  SelectedItem="{Binding InsumoSeleccionado}"
+                                  HorizontalAlignment="Stretch">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="models:Insumo">
+                                    <TextBlock Text="{Binding Nombre}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
+
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Cantidad comprada" Classes="subtle" />
+                        <TextBox Text="{Binding CantidadTexto}" Watermark="Ej: 10" />
+                    </StackPanel>
+
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Costo de esta compra" Classes="subtle" />
+                        <TextBox Text="{Binding CostoTexto}" Watermark="Ej: 50000" />
+                    </StackPanel>
+
+                    <Button Content="Agregar a la lista" Classes="secondary" Command="{Binding AgregarLineaCommand}"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
+                </StackPanel>
+            </Border>
+
+            <!-- Right: pending purchase lines + confirm -->
+            <Border Grid.Column="1" Classes="card" Margin="10,0,0,0">
+                <Grid RowDefinitions="Auto,*,Auto,Auto">
+                    <TextBlock Grid.Row="0" Text="Insumos en esta compra" Classes="h2" Margin="0,0,0,10" />
+
+                    <Border Grid.Row="1" BorderBrush="{StaticResource BrushBorder}" BorderThickness="1" CornerRadius="8">
+                        <ScrollViewer>
+                            <ItemsControl ItemsSource="{Binding Lineas}" Margin="8">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:PurchaseLineViewModel">
+                                        <Grid ColumnDefinitions="*,140,100" Margin="0,6">
+                                            <TextBlock Grid.Column="0" Text="{Binding Nombre}" />
+                                            <TextBlock Grid.Column="1" Text="{Binding CantidadTexto}" Classes="subtle" />
+                                            <TextBlock Grid.Column="2" Text="{Binding CostoTexto}" FontWeight="SemiBold" HorizontalAlignment="Right" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Border>
+
+                    <Grid Grid.Row="2" ColumnDefinitions="*,Auto" Margin="0,12">
+                        <TextBlock Grid.Column="0" Text="Costo total" Classes="h2" />
+                        <TextBlock Grid.Column="1" Text="{Binding CostoTotalTexto}" Classes="h2" />
+                    </Grid>
+
+                    <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
+                        <Button Content="Cancelar" Classes="secondary" Command="{Binding CancelarCommand}" />
+                        <Button Content="Confirmar Compra" Classes="primary" Command="{Binding ConfirmarCommand}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+        </Grid>
+    </Grid>
+
+</UserControl>

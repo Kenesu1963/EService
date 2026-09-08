@@ -1,0 +1,47 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:EService.ViewModels"
+             x:Class="EService.Views.CheckoutView"
+             x:DataType="vm:CheckoutViewModel"
+             Background="{DynamicResource BrushBackground}">
+
+    <Grid HorizontalAlignment="Center" VerticalAlignment="Center" Width="480">
+        <Border Classes="card">
+            <StackPanel Spacing="16">
+
+                <TextBlock Text="Resumen del Pedido" Classes="h1" HorizontalAlignment="Center" />
+
+                <Border BorderBrush="{StaticResource BrushBorder}" BorderThickness="1"
+                        CornerRadius="8" MaxHeight="320">
+                    <ScrollViewer>
+                        <ItemsControl ItemsSource="{Binding Lineas}" Margin="12">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:CartLineViewModel">
+                                    <Grid ColumnDefinitions="*,Auto,Auto" Margin="0,6">
+                                        <TextBlock Grid.Column="0" Text="{Binding Nombre}" />
+                                        <TextBlock Grid.Column="1" Text="{Binding Cantidad, StringFormat='x{0}'}"
+                                                   Classes="subtle" Margin="12,0" />
+                                        <TextBlock Grid.Column="2" Text="{Binding Subtotal, StringFormat='${0:N0}'}"
+                                                   FontWeight="SemiBold" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Border>
+
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Grid.Column="0" Text="Total" Classes="h2" />
+                    <TextBlock Grid.Column="1" Text="{Binding Total, StringFormat='${0:N0}'}" Classes="h2" />
+                </Grid>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
+                    <Button Content="Cancelar" Classes="secondary" Command="{Binding CancelarCommand}" />
+                    <Button Content="Confirmar Pedido" Classes="primary" Command="{Binding ConfirmarCommand}" />
+                </StackPanel>
+
+            </StackPanel>
+        </Border>
+    </Grid>
+
+</UserControl>

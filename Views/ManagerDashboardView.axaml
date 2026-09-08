@@ -1,0 +1,101 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:EService.ViewModels"
+             x:Class="EService.Views.ManagerDashboardView"
+             x:DataType="vm:ManagerDashboardViewModel"
+             x:CompileBindings="False">
+
+    <Grid RowDefinitions="Auto,*" Background="{DynamicResource BrushBackground}">
+
+        <!-- Top bar -->
+        <Border Grid.Row="0" Background="{StaticResource BrushPrimary}" Padding="16,12">
+            <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto">
+                <Button Grid.Column="0" Classes="nav" Content="🏠 Inicio" Command="{Binding HomeCommand}" />
+                <TextBlock Grid.Column="1" Text="Panel de Gerente" Foreground="White" FontSize="20"
+                           FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                <Button Grid.Column="2" Classes="nav" Content="📦 Inventario" Command="{Binding IrAInventarioCommand}" />
+                <Button Grid.Column="3" Classes="nav" Content="➕ Agregar Compra" Command="{Binding IrAAgregarCompraCommand}" />
+                <Button Grid.Column="4" Classes="nav" Content="🧾 Tomar Pedido" Command="{Binding HacerPedidoCommand}" />
+                <Button Grid.Column="5" Classes="nav" Content="👤 Usuarios" Command="{Binding IrAUsuariosCommand}" />
+            </Grid>
+        </Border>
+
+        <ScrollViewer Grid.Row="1" Margin="20">
+            <StackPanel Spacing="20">
+
+                <!-- Stat cards -->
+                <Grid ColumnDefinitions="*,*,*" >
+                    <Border Grid.Column="0" Classes="card" Margin="0,0,8,0">
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Ventas Totales" Classes="subtle" />
+                            <TextBlock Text="{Binding TotalVentasTexto}" Classes="h1" Foreground="{StaticResource BrushSuccess}" />
+                        </StackPanel>
+                    </Border>
+                    <Border Grid.Column="1" Classes="card" Margin="8,0">
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Compras Totales" Classes="subtle" />
+                            <TextBlock Text="{Binding TotalComprasTexto}" Classes="h1" Foreground="{StaticResource BrushDanger}" />
+                        </StackPanel>
+                    </Border>
+                    <Border Grid.Column="2" Classes="card" Margin="8,0,0,0">
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Ganancia Neta" Classes="subtle" />
+                            <TextBlock Text="{Binding GananciaNetaTexto}" Classes="h1" Foreground="{StaticResource BrushPrimary}" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- Transactions -->
+                <Border Classes="card">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="Historial de Transacciones" Classes="h2" />
+                        <Border BorderBrush="{StaticResource BrushBorder}" BorderThickness="1" CornerRadius="8" MaxHeight="280">
+                            <ScrollViewer>
+                                <ItemsControl ItemsSource="{Binding Transacciones}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:TransactionRowViewModel">
+                                            <Border Background="{Binding RowBackground}" Padding="10,8" CornerRadius="4" Margin="0,2">
+                                                <Grid ColumnDefinitions="140,80,*,110,90">
+                                                    <TextBlock Grid.Column="0" Text="{Binding FechaHora}" FontSize="12" />
+                                                    <TextBlock Grid.Column="1" Text="{Binding Tipo}" FontWeight="SemiBold" FontSize="12" />
+                                                    <TextBlock Grid.Column="2" Text="{Binding Descripcion}" FontSize="12" TextTrimming="CharacterEllipsis" />
+                                                    <TextBlock Grid.Column="3" Text="{Binding MontoTexto}" FontWeight="SemiBold" FontSize="12" HorizontalAlignment="Right" />
+                                                    <TextBlock Grid.Column="4" Text="{Binding Usuario}" FontSize="12" HorizontalAlignment="Right" />
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <!-- Users -->
+                <Border Classes="card">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="Empleados" Classes="h2" />
+                        <ItemsControl ItemsSource="{Binding Usuarios}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:UserRowViewModel">
+                                    <Border Background="{StaticResource BrushBackground}" CornerRadius="8"
+                                            Padding="12,8" Margin="4">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <TextBlock Text="{Binding Codigo}" FontWeight="SemiBold" />
+                                            <TextBlock Text="{Binding TipoUsuario}" Classes="subtle" />
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+
+</UserControl>

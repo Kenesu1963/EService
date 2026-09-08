@@ -1,0 +1,16 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="EService.Views.Dialogs.ChoiceDialogWindow"
+        Width="420" SizeToContent="Height" CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource BrushSurface}">
+    <StackPanel Margin="24" Spacing="16">
+        <TextBlock x:Name="TitleText" Classes="h2" />
+        <TextBlock x:Name="MessageText" TextWrapping="Wrap" />
+        <ListBox x:Name="OptionsList" SelectedIndex="0" />
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
+            <Button Content="Cancelar" Classes="secondary" Click="OnCancelClick" />
+            <Button Content="Aceptar" Classes="primary" Click="OnOkClick" />
+        </StackPanel>
+    </StackPanel>
+</Window>
