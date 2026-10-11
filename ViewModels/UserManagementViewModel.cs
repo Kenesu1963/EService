@@ -1,6 +1,6 @@
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
+using EService.Collections;
 using EService.Services;
 
 namespace EService.ViewModels;
@@ -16,7 +16,15 @@ public class UserManagementViewModel : ViewModelBase
 {
     private readonly LoginService _loginService = LoginService.Instance;
 
-    public ObservableCollection<UserRowViewModel> Usuarios { get; } = new();
+    // Para que la pantalla se refresque cuando cambia la lista, no se
+    // modifica la lista existente: se reemplaza por una nueva y se avisa con
+    // SetField (Avalonia detecta que ItemsSource ahora apunta a otra lista).
+    private DoublyLinkedList<UserRowViewModel> _usuarios = new();
+    public DoublyLinkedList<UserRowViewModel> Usuarios
+    {
+        get => _usuarios;
+        private set => SetField(ref _usuarios, value);
+    }
 
     public ICommand AgregarUsuarioCommand { get; }
     public ICommand EliminarUsuarioCommand { get; }
@@ -37,9 +45,9 @@ public class UserManagementViewModel : ViewModelBase
 
     private void RecargarUsuarios()
     {
-        Usuarios.Clear();
-        foreach (var e in _loginService.ObtenerTodosLosEmpleados())
-            Usuarios.Add(new UserRowViewModel(e));
+        Usuarios = _loginService.ObtenerTodosLosEmpleados()
+            .Select(e => new UserRowViewModel(e))
+            .ToDoublyLinkedList();
     }
 
     private async void AgregarUsuario()

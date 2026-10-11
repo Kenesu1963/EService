@@ -18,21 +18,30 @@ public class Transaction
     public string UserCode { get; }
     public string TransactionId { get; }
 
+    // Información legal del proveedor. Solo aplica a compras ("COMPRA");
+    // en una venta simplemente quedan como texto vacío.
+    public string ProviderName { get; }
+    public string ReceiptNumber { get; }
+
     /// <summary>Used when creating a brand new transaction right now.</summary>
-    public Transaction(double amount, string type, string description, string userCode)
+    public Transaction(double amount, string type, string description, string userCode,
+                        string providerName = "", string receiptNumber = "")
     {
         Amount = amount;
         Type = type;
         Description = description;
         UserCode = userCode;
         Timestamp = DateTime.Now;
+        ProviderName = providerName;
+        ReceiptNumber = receiptNumber;
         _transactionCounter++;
         TransactionId = $"TRX{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}{_transactionCounter:0000}";
     }
 
-    /// <summary>Used when re-loading an existing transaction from the .txt file.</summary>
+    /// <summary>Used when re-loading an existing transaction from disk.</summary>
     public Transaction(double amount, string type, string description, string userCode,
-                        DateTime timestamp, string transactionId)
+                        DateTime timestamp, string transactionId,
+                        string providerName = "", string receiptNumber = "")
     {
         Amount = amount;
         Type = type;
@@ -40,6 +49,8 @@ public class Transaction
         UserCode = userCode;
         Timestamp = timestamp;
         TransactionId = transactionId;
+        ProviderName = providerName;
+        ReceiptNumber = receiptNumber;
     }
 
     public string FormattedTimestamp => Timestamp.ToString("yyyy-MM-dd HH:mm:ss");

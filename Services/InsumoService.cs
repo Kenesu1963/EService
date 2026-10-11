@@ -1,26 +1,28 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
+using EService.Collections;
 using EService.Models;
 
 namespace EService.Services;
 
 /// <summary>
 /// Replaces InsumoController.java (inventory management). The original used
-/// a fixed-size array (Insumo[100]) because that's how it was first written;
-/// here it's a normal growable List, which is simpler and removes the old
-/// "no se pueden agregar más insumos" (100-item ceiling) limitation for free.
+/// a fixed-size array (Insumo[100]); here the inventory is a growable
+/// DoublyLinkedList, which removes the old "no se pueden agregar más
+/// insumos" (100-item ceiling) limitation for free.
 /// Behavior is otherwise identical: same default catalog of ~74 raw
-/// ingredients, same load/save to insumos.txt, same add/discount logic.
+/// ingredients, same add/discount logic. Persistence is now insumos.dat.
 /// </summary>
 public class InsumoService
 {
     private static InsumoService? _instance;
     public static InsumoService Instance => _instance ??= new InsumoService();
 
-    private readonly List<Insumo> _insumos = new();
-    public IReadOnlyList<Insumo> Insumos => _insumos;
+    private readonly DoublyLinkedList<Insumo> _insumos = new();
+
+    // Se expone solo como "recorrible" (lectura): quien lo consulte puede
+    // hacer foreach/LINQ, pero no agregar ni quitar nodos por su cuenta.
+    public IEnumerable<Insumo> Insumos => _insumos;
 
     private InsumoService()
     {
@@ -31,14 +33,8 @@ public class InsumoService
 
     private void CargarInsumosDesdeArchivo()
     {
-        foreach (var data in FileDataStore.LoadInsumos())
-        {
-            var codigo = data[0];
-            var nombre = data[1];
-            var cantidad = double.Parse(data[2], CultureInfo.InvariantCulture);
-            var unidad = data[3];
-            _insumos.Add(new Insumo(nombre, unidad, cantidad, codigo));
-        }
+        foreach (var insumo in FileDataStore.LoadInsumos())
+            _insumos.Add(insumo);
     }
 
     private void CargarInsumosPorDefecto()
@@ -73,20 +69,15 @@ public class InsumoService
             ("Pulpa de fresa","Unidad","I072"), ("Leche evaporada","Gr","I073"),
         };
 
+        // Los códigos del catálogo son únicos, así que se agregan directo y
+        // se guarda UNA sola vez al final (no 74 veces, una por insumo).
         foreach (var (nombre, unidad, codigo) in catalogo)
-            AgregarInsumo(new Insumo(nombre, unidad, 0.0, codigo));
+            _insumos.Add(new Insumo(nombre, unidad, 0.0, codigo));
 
         GuardarInsumos();
     }
 
-    public void GuardarInsumos()
-    {
-        var data = _insumos.Select(i => new[]
-        {
-            i.Codigo, i.Nombre, i.Cantidad.ToString(CultureInfo.InvariantCulture), i.TipoUnidad
-        }).ToList();
-        FileDataStore.SaveInsumos(data);
-    }
+    public void GuardarInsumos() => FileDataStore.SaveInsumos(_insumos);
 
     /// <summary>
     /// If the code already exists, adds the quantity to the existing stock
@@ -120,7 +111,7 @@ public class InsumoService
     public Insumo? BuscarInsumoPorCodigo(string codigo)
     {
         var normalizado = codigo.Trim().ToUpperInvariant();
-        return _insumos.FirstOrDefault(i => string.Equals(i.Codigo, normalizado, StringComparison.OrdinalIgnoreCase));
+        return _insumos.Find(i => string.Equals(i.Codigo, normalizado, StringComparison.OrdinalIgnoreCase));
     }
 
     public void EliminarInsumo(Insumo insumo)

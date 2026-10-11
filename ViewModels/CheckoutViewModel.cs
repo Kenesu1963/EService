@@ -1,8 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Windows.Input;
+using EService.Collections;
 using EService.Services;
 
 namespace EService.ViewModels;
@@ -20,7 +20,7 @@ public class CheckoutViewModel : ViewModelBase
     private readonly PlatoService _platoService = new();
     private readonly InsumoService _insumoService = InsumoService.Instance;
 
-    public List<CartLineViewModel> Lineas { get; }
+    public DoublyLinkedList<CartLineViewModel> Lineas { get; }
     public int Total { get; }
 
     public ICommand ConfirmarCommand { get; }
@@ -39,7 +39,7 @@ public class CheckoutViewModel : ViewModelBase
                 var precio = plato?.Precio ?? 0;
                 return new CartLineViewModel(nombre, g.Count(), precio);
             })
-            .ToList();
+            .ToDoublyLinkedList();
 
         Total = Lineas.Sum(l => l.Subtotal);
 

@@ -1,32 +1,36 @@
-using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
+using EService.Collections;
 using EService.Models;
 
 namespace EService.Services;
 
 /// <summary>
 /// Replaces TransactionController.java. Keeps the running ledger of sales
-/// ("VENTA") and purchases ("COMPRA"), persisted to transactions.txt, and
+/// ("VENTA") and purchases ("COMPRA"), persisted to transactions.dat, and
 /// the running totals (total sales, total purchases, net profit) the
 /// Manager Dashboard displays. The original also built a Swing
 /// DefaultTableModel here - that's UI-specific, so instead this class just
 /// exposes the plain list of transactions, and the Manager Dashboard
 /// ViewModel turns that into whatever the UI needs to display.
+///
+/// El libro de transacciones es una DoublyLinkedList: cada venta o compra
+/// nueva se agrega al final (O(1)), así que la lista siempre queda en orden
+/// cronológico, y se puede recorrer de la más reciente a la más antigua
+/// con Backwards() sin ordenar nada.
 /// </summary>
 public class TransactionService
 {
     private static TransactionService? _instance;
     public static TransactionService Instance => _instance ??= new TransactionService();
 
-    private readonly List<Transaction> _transactions = new();
+    private readonly DoublyLinkedList<Transaction> _transactions = new();
 
     public double TotalSales { get; private set; }
     public double TotalPurchases { get; private set; }
     public double NetProfit => TotalSales - TotalPurchases;
 
-    public IReadOnlyList<Transaction> Transactions => _transactions.AsReadOnly();
+    // Solo lectura hacia afuera: se puede recorrer, no modificar.
+    public IEnumerable<Transaction> Transactions => _transactions;
 
     private TransactionService()
     {
@@ -35,44 +39,21 @@ public class TransactionService
 
     private void CargarTransaccionesDesdeArchivo()
     {
-        foreach (var data in FileDataStore.LoadTransactions())
+        foreach (var t in FileDataStore.LoadTransactions())
         {
-            try
-            {
-                var id = data[0];
-                var fechaTexto = data[1];
-                var tipo = data[2];
-                var descripcion = data[3];
-                var monto = double.Parse(data[4], CultureInfo.InvariantCulture);
-                var usuario = data[5];
+            _transactions.Add(t);
 
-                var fecha = DateTime.ParseExact(fechaTexto, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
-                var t = new Transaction(monto, tipo, descripcion, usuario, fecha, id);
-                _transactions.Add(t);
-
-                if (tipo == "VENTA") TotalSales += monto;
-                else if (tipo == "COMPRA") TotalPurchases += monto;
-            }
-            catch (Exception e)
-            {
-                Console.Error.WriteLine($"Error cargando transacción: {e.Message}");
-            }
+            if (t.Type == "VENTA") TotalSales += t.Amount;
+            else if (t.Type == "COMPRA") TotalPurchases += t.Amount;
         }
     }
 
-    private void GuardarTransacciones()
-    {
-        var data = _transactions.Select(t => new[]
-        {
-            t.TransactionId, t.FormattedTimestamp, t.Type, t.Description,
-            t.Amount.ToString(CultureInfo.InvariantCulture), t.UserCode
-        }).ToList();
-        FileDataStore.SaveTransactions(data);
-    }
+    private void GuardarTransacciones() => FileDataStore.SaveTransactions(_transactions);
 
-    public void AddTransaction(double amount, string type, string description, string userCode)
+    public void AddTransaction(double amount, string type, string description, string userCode,
+                                string providerName = "", string receiptNumber = "")
     {
-        var transaction = new Transaction(amount, type, description, userCode);
+        var transaction = new Transaction(amount, type, description, userCode, providerName, receiptNumber);
         _transactions.Add(transaction);
 
         if (type == "VENTA") TotalSales += amount;
@@ -81,8 +62,9 @@ public class TransactionService
         GuardarTransacciones();
     }
 
-    public void AddPurchase(double amount, string description, string userCode) =>
-        AddTransaction(amount, "COMPRA", description, userCode);
+    public void AddPurchase(double amount, string description, string userCode,
+                             string providerName = "", string receiptNumber = "") =>
+        AddTransaction(amount, "COMPRA", description, userCode, providerName, receiptNumber);
 
     public void AddSale(double amount, string description, string userCode) =>
         AddTransaction(amount, "VENTA", description, userCode);

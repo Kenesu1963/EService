@@ -1,9 +1,9 @@
 using System;
-using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Windows.Input;
+using EService.Collections;
 using EService.Models;
 using EService.Services;
 
@@ -11,18 +11,17 @@ namespace EService.ViewModels;
 
 /// <summary>
 /// Replaces manageragregarcompra.java. A manager picks an ingredient,
-/// enters how much was bought and for how much, and builds up a list of
-/// purchase lines. Confirming the whole purchase: adds every line's
-/// quantity to inventory (topping up existing stock, same as
-/// InsumoService/InsumoController's AgregarInsumo behavior), records a
-/// single "COMPRA" transaction for the combined cost, and writes an
-/// invoice .txt file - same three steps the Java version performed.
+/// enters how much was bought, and builds up a list of purchase lines with
+/// no price attached yet. Confirming the whole purchase: adds every line's
+/// quantity to inventory (topping up existing stock), records a single
+/// "COMPRA" transaction for the total cost entered at the end, and writes
+/// an invoice .txt file with the provider/receipt information.
 /// </summary>
 public class AddPurchaseViewModel : ViewModelBase
 {
     private readonly InsumoService _insumoService = InsumoService.Instance;
 
-    public System.Collections.Generic.List<Insumo> InsumosDisponibles { get; }
+    public DoublyLinkedList<Insumo> InsumosDisponibles { get; }
 
     private Insumo? _insumoSeleccionado;
     public Insumo? InsumoSeleccionado
@@ -38,17 +37,42 @@ public class AddPurchaseViewModel : ViewModelBase
         set => SetField(ref _cantidadTexto, value);
     }
 
-    private string _costoTexto = "";
-    public string CostoTexto
+    // Información legal de la compra completa (no de una línea individual),
+    // se pide una sola vez, al final, antes de confirmar.
+    private string _nombreProveedor = "";
+    public string NombreProveedor
     {
-        get => _costoTexto;
-        set => SetField(ref _costoTexto, value);
+        get => _nombreProveedor;
+        set => SetField(ref _nombreProveedor, value);
     }
 
-    public ObservableCollection<PurchaseLineViewModel> Lineas { get; } = new();
+    private string _numeroRecibo = "";
+    public string NumeroRecibo
+    {
+        get => _numeroRecibo;
+        set => SetField(ref _numeroRecibo, value);
+    }
 
-    public double CostoTotal => Lineas.Sum(l => l.Costo);
-    public string CostoTotalTexto => $"${CostoTotal:N0}";
+    // El costo se pide UNA sola vez, al final, como el total de toda la compra.
+    private string _costoTotalTexto = "";
+    public string CostoTotalTexto
+    {
+        get => _costoTotalTexto;
+        set => SetField(ref _costoTotalTexto, value);
+    }
+
+    // La fecha es automática: el usuario no la escribe.
+    public string FechaActualTexto => DateTime.Now.ToString("dd/MM/yyyy");
+
+    // Lista de líneas pendientes. Para que la pantalla se refresque, cada
+    // cambio crea una copia nueva con el cambio aplicado y la reemplaza
+    // (SetField avisa a Avalonia de que ItemsSource ahora es otra lista).
+    private DoublyLinkedList<PurchaseLineViewModel> _lineas = new();
+    public DoublyLinkedList<PurchaseLineViewModel> Lineas
+    {
+        get => _lineas;
+        private set => SetField(ref _lineas, value);
+    }
 
     public ICommand AgregarLineaCommand { get; }
     public ICommand ConfirmarCommand { get; }
@@ -56,7 +80,7 @@ public class AddPurchaseViewModel : ViewModelBase
 
     public AddPurchaseViewModel()
     {
-        InsumosDisponibles = _insumoService.Insumos.OrderBy(i => i.Nombre).ToList();
+        InsumosDisponibles = _insumoService.Insumos.OrderBy(i => i.Nombre).ToDoublyLinkedList();
 
         AgregarLineaCommand = new RelayCommand(AgregarLinea);
         ConfirmarCommand = new RelayCommand(Confirmar);
@@ -77,20 +101,12 @@ public class AddPurchaseViewModel : ViewModelBase
             return;
         }
 
-        if (!double.TryParse(CostoTexto.Trim(), NumberStyles.Any, CultureInfo.InvariantCulture, out var costo) || costo < 0)
-        {
-            await DialogService.ShowMessageAsync("Error", "Ingrese un costo válido.");
-            return;
-        }
-
-        Lineas.Add(new PurchaseLineViewModel(
-            InsumoSeleccionado.Codigo, InsumoSeleccionado.Nombre, cantidad, InsumoSeleccionado.TipoUnidad, costo));
-
-        OnPropertyChanged(nameof(CostoTotal));
-        OnPropertyChanged(nameof(CostoTotalTexto));
+        var nuevas = Lineas.Copy();
+        nuevas.Add(new PurchaseLineViewModel(
+            InsumoSeleccionado.Codigo, InsumoSeleccionado.Nombre, cantidad, InsumoSeleccionado.TipoUnidad));
+        Lineas = nuevas;
 
         CantidadTexto = "";
-        CostoTexto = "";
     }
 
     private async void Confirmar()
@@ -101,9 +117,28 @@ public class AddPurchaseViewModel : ViewModelBase
             return;
         }
 
+        if (string.IsNullOrWhiteSpace(NombreProveedor))
+        {
+            await DialogService.ShowMessageAsync("Error", "Ingrese el nombre del proveedor.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(NumeroRecibo))
+        {
+            await DialogService.ShowMessageAsync("Error", "Ingrese el número de recibo o factura del proveedor.");
+            return;
+        }
+
+        if (!double.TryParse(CostoTotalTexto.Trim(), NumberStyles.Any, CultureInfo.InvariantCulture, out var costoTotal) || costoTotal <= 0)
+        {
+            await DialogService.ShowMessageAsync("Error", "Ingrese el costo total de la compra (mayor a 0).");
+            return;
+        }
+
         var confirmar = await DialogService.ShowConfirmAsync(
             "Confirmar Compra",
-            $"¿Confirmar compra de {Lineas.Count} insumo(s) por un total de {CostoTotalTexto}?");
+            $"¿Confirmar compra de {Lineas.Count} insumo(s) por un total de ${costoTotal:N0}?\n" +
+            $"Proveedor: {NombreProveedor}\nRecibo N°: {NumeroRecibo}");
 
         if (!confirmar) return;
 
@@ -112,30 +147,32 @@ public class AddPurchaseViewModel : ViewModelBase
 
         var currentUser = LoginService.Instance.CurrentUserCode ?? "SYSTEM";
         var descripcion = "COMPRA - " + string.Join(", ", Lineas.Select(l => l.Nombre));
-        TransactionService.Instance.AddPurchase(CostoTotal, descripcion, currentUser);
+        TransactionService.Instance.AddPurchase(costoTotal, descripcion, currentUser, NombreProveedor, NumeroRecibo);
 
         var invoiceNumber = DateTime.Now.ToString("yyyyMMddHHmmss");
-        GenerarFactura(invoiceNumber, currentUser);
+        GenerarFactura(invoiceNumber, currentUser, costoTotal);
 
         await DialogService.ShowMessageAsync("Éxito", "Compra registrada exitosamente.");
         NavigationService.NavigateTo(new ManagerDashboardViewModel());
     }
 
-    private void GenerarFactura(string invoiceNumber, string currentUser)
+    private void GenerarFactura(string invoiceNumber, string currentUser, double costoTotal)
     {
         var sb = new StringBuilder();
         sb.AppendLine("=== FACTURA DE COMPRA ===");
-        sb.AppendLine($"Número de factura: {invoiceNumber}");
+        sb.AppendLine($"Número de factura interno: {invoiceNumber}");
+        sb.AppendLine($"Proveedor: {NombreProveedor}");
+        sb.AppendLine($"Número de recibo del proveedor: {NumeroRecibo}");
         sb.AppendLine($"Fecha: {DateTime.Now:dd/MM/yyyy HH:mm:ss}");
         sb.AppendLine($"Registrado por: {currentUser}");
         sb.AppendLine();
         sb.AppendLine("INSUMOS COMPRADOS:");
 
         foreach (var linea in Lineas)
-            sb.AppendLine($"- {linea.Nombre}: {linea.CantidadTexto} ({linea.CostoTexto})");
+            sb.AppendLine($"- {linea.Nombre}: {linea.CantidadTexto}");
 
         sb.AppendLine();
-        sb.AppendLine($"COSTO TOTAL: {CostoTotalTexto}");
+        sb.AppendLine($"COSTO TOTAL: ${costoTotal:N0}");
         sb.AppendLine("==========================");
 
         FileDataStore.WritePurchaseInvoice(invoiceNumber, sb.ToString());

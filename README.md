@@ -1,9 +1,11 @@
 # E-Service — C# / Avalonia rewrite
 
 This is a full rewrite of the original Java/NetBeans/Swing **E-Service**
-restaurant point-of-sale project. It's the **same app, same features,
-same `.txt` file storage** — the goal was a modern-looking desktop UI and
-cleaner code, not a redesign of what the program actually does.
+restaurant point-of-sale project. It's the **same app and the same
+features** — the goal was a modern-looking desktop UI and cleaner code.
+Every list in the project is a hand-written **doubly linked list**
+(`Collections/DoublyLinkedList.cs`), and data is saved in binary **`.dat`**
+files (no database).
 
 ## How to build and run
 
@@ -25,17 +27,26 @@ The original hardcoded Windows paths like `C:\EserviceData\...`. Since
 this now runs on Linux (and could run on Windows/Mac too), data is stored
 in the standard per-user application-data folder instead:
 
-- **Linux:** `~/.local/share/EService/`
+- **Linux:** `~/.config/EService/`
 - **Windows:** `%APPDATA%\EService\`
 
 Inside that folder:
-- `Data/users.txt`, `Data/insumos.txt`, `Data/transactions.txt` — same
-  `|`-delimited plain text format the original used
-- `Pedidos/` — one `.txt` receipt per confirmed order
-- `Facturas/` — one `.txt` invoice per stock purchase
+- `Data/users.dat`, `Data/insumos.dat`, `Data/transactions.dat` — binary
+  files (written with `BinaryWriter`, read with `BinaryReader`). They can't
+  be opened in a text editor. The exact byte layout is documented at the top
+  of `Services/FileDataStore.cs`.
+- `Pedidos/` — one `.txt` receipt per confirmed order (readable on purpose)
+- `Facturas/` — one `.txt` invoice per stock purchase (readable on purpose)
 
-Nothing about the file *format* changed — only where the files live, so
-it works correctly no matter whose computer it's running on.
+**Safety features:** saves go to a temporary file first and only replace the
+real `.dat` when they finish, so a crash mid-save can't corrupt your data. If
+a `.dat` ever can't be read, it is renamed to `*.dat.corrupto-DATE` (never
+deleted or overwritten) and the program starts from the defaults.
+
+**Migrating from the older `.txt` version:** if `users.txt`, `insumos.txt` or
+`transactions.txt` exist and the matching `.dat` doesn't, they are imported
+automatically on first launch. The old `.txt` files are left untouched as a
+backup.
 
 ## Project structure (and what each old file became)
 
@@ -48,6 +59,7 @@ screens, so the screens themselves stay simple.
 
 ```
 EService/
+├── Collections/     → DoublyLinkedList<T>, the list used everywhere
 ├── Models/          → same as your old "clases" folder
 ├── Services/         → same as your old "controladores" folder
 ├── ViewModels/        → NEW: connects each screen to the Services below it
@@ -69,7 +81,7 @@ EService/
 ### Services (business logic + file reading/writing — no UI code)
 | Old Java file | New C# file | Notes |
 |---|---|---|
-| `FileManager.java` | `Services/FileDataStore.cs` | Same `.txt` format, cross-platform paths |
+| `FileManager.java` | `Services/FileDataStore.cs` | Binary `.dat` files, cross-platform paths |
 | `LoginController.java` | `Services/LoginService.cs` | Same employee list/validation logic |
 | `InsumoController.java` | `Services/InsumoService.cs` | Same default ~74-item ingredient catalog |
 | `PlatoController.java` | `Services/PlatoService.cs` | Same 40-item menu + recipes |
@@ -120,7 +132,7 @@ equivalent of that old line — same idea, no extra windows piling up.
 
 ## What did NOT change
 
-- The `.txt`-file-based storage approach (no database).
+- No database: data is still stored in plain files (now `.dat`).
 - The menu catalog, prices, and recipes (ingredient consumption per dish).
 - The default ingredient catalog and seed employee codes.
 - The overall flow: log in → (server: order → checkout) or

@@ -1,6 +1,6 @@
-using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Input;
+using EService.Collections;
 using EService.Services;
 
 namespace EService.ViewModels;
@@ -19,8 +19,8 @@ public class ManagerDashboardViewModel : ViewModelBase
     public string TotalComprasTexto => $"${_transactionService.TotalPurchases:N0}";
     public string GananciaNetaTexto => $"${_transactionService.NetProfit:N0}";
 
-    public List<TransactionRowViewModel> Transacciones { get; }
-    public List<UserRowViewModel> Usuarios { get; }
+    public DoublyLinkedList<TransactionRowViewModel> Transacciones { get; }
+    public DoublyLinkedList<UserRowViewModel> Usuarios { get; }
 
     public ICommand IrAInventarioCommand { get; }
     public ICommand IrAAgregarCompraCommand { get; }
@@ -35,11 +35,11 @@ public class ManagerDashboardViewModel : ViewModelBase
         Transacciones = _transactionService.Transactions
             .OrderByDescending(t => t.Timestamp)
             .Select(t => new TransactionRowViewModel(t))
-            .ToList();
+            .ToDoublyLinkedList();
 
         Usuarios = _loginService.ObtenerTodosLosEmpleados()
             .Select(e => new UserRowViewModel(e))
-            .ToList();
+            .ToDoublyLinkedList();
 
         IrAInventarioCommand = new RelayCommand(() => NavigationService.NavigateTo(new InventoryViewModel()));
         IrAAgregarCompraCommand = new RelayCommand(() => NavigationService.NavigateTo(new AddPurchaseViewModel()));

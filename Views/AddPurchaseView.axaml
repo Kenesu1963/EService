@@ -38,11 +38,6 @@
                         <TextBox Text="{Binding CantidadTexto}" Watermark="Ej: 10" />
                     </StackPanel>
 
-                    <StackPanel Spacing="4">
-                        <TextBlock Text="Costo de esta compra" Classes="subtle" />
-                        <TextBox Text="{Binding CostoTexto}" Watermark="Ej: 50000" />
-                    </StackPanel>
-
                     <Button Content="Agregar a la lista" Classes="secondary" Command="{Binding AgregarLineaCommand}"
                             HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
                 </StackPanel>
@@ -58,10 +53,9 @@
                             <ItemsControl ItemsSource="{Binding Lineas}" Margin="8">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate x:DataType="vm:PurchaseLineViewModel">
-                                        <Grid ColumnDefinitions="*,140,100" Margin="0,6">
+                                        <Grid ColumnDefinitions="*,140" Margin="0,6">
                                             <TextBlock Grid.Column="0" Text="{Binding Nombre}" />
-                                            <TextBlock Grid.Column="1" Text="{Binding CantidadTexto}" Classes="subtle" />
-                                            <TextBlock Grid.Column="2" Text="{Binding CostoTexto}" FontWeight="SemiBold" HorizontalAlignment="Right" />
+                                            <TextBlock Grid.Column="1" Text="{Binding CantidadTexto}" Classes="subtle" HorizontalAlignment="Right" />
                                         </Grid>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
@@ -69,10 +63,33 @@
                         </ScrollViewer>
                     </Border>
 
-                    <Grid Grid.Row="2" ColumnDefinitions="*,Auto" Margin="0,12">
-                        <TextBlock Grid.Column="0" Text="Costo total" Classes="h2" />
-                        <TextBlock Grid.Column="1" Text="{Binding CostoTotalTexto}" Classes="h2" />
-                    </Grid>
+                    <!-- Información legal + costo total, se llena UNA VEZ al final -->
+                    <Border Grid.Row="2" Background="{StaticResource BrushBackground}" CornerRadius="8"
+                            Padding="12" Margin="0,12">
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="Información de la compra" Classes="h2" FontSize="15" />
+
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Costo total de la compra" Classes="subtle" />
+                                <TextBox Text="{Binding CostoTotalTexto}" Watermark="Ej: 150000" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Nombre del proveedor" Classes="subtle" />
+                                <TextBox Text="{Binding NombreProveedor}" Watermark="Ej: Distribuidora El Puerto" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Número de recibo / factura" Classes="subtle" />
+                                <TextBox Text="{Binding NumeroRecibo}" Watermark="Ej: FAC-00123" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Fecha" Classes="subtle" />
+                                <TextBlock Text="{Binding FechaActualTexto}" FontWeight="SemiBold" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
 
                     <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
                         <Button Content="Cancelar" Classes="secondary" Command="{Binding CancelarCommand}" />

@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using EService.Collections;
 using EService.Models;
 
 namespace EService.Services;
@@ -8,7 +8,11 @@ namespace EService.Services;
 /// <summary>
 /// Replaces LoginController.java. It keeps all the same employee-management
 /// logic (validate code, add/remove/modify/verify employee, list them all),
-/// loaded from and saved to the same "|"-delimited users.txt file.
+/// loaded from and saved to users.dat (binary, see FileDataStore).
+///
+/// Internamente los empleados se guardan en un Dictionary (búsqueda por
+/// código en O(1), que es lo que más se usa al iniciar sesión); las listas
+/// que se entregan hacia afuera son DoublyLinkedList.
 ///
 /// One deliberate change: the original Java class popped up JOptionPane
 /// dialogs directly from inside the controller, mixing business logic with
@@ -55,26 +59,17 @@ public class LoginService
 
     private void CargarEmpleadosDesdeArchivo()
     {
-        foreach (var data in FileDataStore.LoadUsers())
-        {
-            var codigo = data[0];
-            var esGerente = bool.Parse(data[1]);
-            _empleados[codigo] = new Empleado(codigo, esGerente);
-        }
+        foreach (var empleado in FileDataStore.LoadUsers())
+            _empleados[empleado.Codigo] = empleado;
     }
 
-    private void GuardarEmpleados()
-    {
-        var usersData = _empleados.Values
-            .Select(e => new[] { e.Codigo, e.EsGerente.ToString() })
-            .ToList();
-        FileDataStore.SaveUsers(usersData);
-    }
+    private void GuardarEmpleados() => FileDataStore.SaveUsers(_empleados.Values);
 
     public Empleado? ValidarCodigo(string codigo) =>
         _empleados.TryGetValue(codigo, out var empleado) ? empleado : null;
 
-    public IReadOnlyList<Empleado> ObtenerTodosLosEmpleados() => _empleados.Values.ToList();
+    /// <summary>Copia de la lista actual de empleados (no la interna).</summary>
+    public DoublyLinkedList<Empleado> ObtenerTodosLosEmpleados() => _empleados.Values.ToDoublyLinkedList();
 
     /// <summary>Throws InvalidOperationException if the code already exists.</summary>
     public void AgregarEmpleado(string codigo, bool esGerente)

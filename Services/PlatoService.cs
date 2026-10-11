@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using EService.Collections;
 using EService.Models;
 
 namespace EService.Services;
@@ -13,8 +14,8 @@ namespace EService.Services;
 /// </summary>
 public class PlatoService
 {
-    private readonly List<Plato> _platos = new();
-    public IReadOnlyList<Plato> Platos => _platos;
+    private readonly DoublyLinkedList<Plato> _platos = new();
+    public IEnumerable<Plato> Platos => _platos;
 
     public PlatoService()
     {
@@ -121,7 +122,7 @@ public class PlatoService
     }
 
     public Plato? BuscarPorCodigo(string codigo) =>
-        _platos.FirstOrDefault(p => p.Codigo == codigo);
+        _platos.Find(p => p.Codigo == codigo);
 
     /// <summary>All distinct categories, in menu order, for grouping the UI.</summary>
     public IEnumerable<string> Categorias => new[] { "Plato fuerte", "Entrada", "Postre", "Bebida" };

@@ -1,6 +1,6 @@
-using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Input;
+using EService.Collections;
 using EService.Services;
 
 namespace EService.ViewModels;
@@ -11,7 +11,7 @@ namespace EService.ViewModels;
 /// </summary>
 public class InventoryViewModel : ViewModelBase
 {
-    public List<InsumoRowViewModel> Insumos { get; }
+    public DoublyLinkedList<InsumoRowViewModel> Insumos { get; }
 
     public ICommand HomeCommand { get; }
     public ICommand VolverCommand { get; }
@@ -21,7 +21,7 @@ public class InventoryViewModel : ViewModelBase
         Insumos = InsumoService.Instance.Insumos
             .OrderBy(i => i.Nombre)
             .Select(i => new InsumoRowViewModel(i))
-            .ToList();
+            .ToDoublyLinkedList();
 
         HomeCommand = new RelayCommand(() => NavigationService.NavigateTo(new LobbyViewModel()));
         VolverCommand = new RelayCommand(() => NavigationService.NavigateTo(new ManagerDashboardViewModel()));

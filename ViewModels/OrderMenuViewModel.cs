@@ -1,6 +1,6 @@
-using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Input;
+using EService.Collections;
 using EService.Services;
 
 namespace EService.ViewModels;
@@ -18,10 +18,10 @@ public class OrderMenuViewModel : ViewModelBase
     private readonly PlatoService _platoService = new();
     private readonly CartService _cart = CartService.Instance;
 
-    public List<MenuItemViewModel> PlatosFuertes { get; }
-    public List<MenuItemViewModel> Entradas { get; }
-    public List<MenuItemViewModel> Postres { get; }
-    public List<MenuItemViewModel> Bebidas { get; }
+    public DoublyLinkedList<MenuItemViewModel> PlatosFuertes { get; }
+    public DoublyLinkedList<MenuItemViewModel> Entradas { get; }
+    public DoublyLinkedList<MenuItemViewModel> Postres { get; }
+    public DoublyLinkedList<MenuItemViewModel> Bebidas { get; }
 
     private int _cantidadEnCarrito;
     public int CantidadEnCarrito
@@ -36,10 +36,10 @@ public class OrderMenuViewModel : ViewModelBase
 
     public OrderMenuViewModel()
     {
-        PlatosFuertes = _platoService.PorCategoria("Plato fuerte").Select(p => new MenuItemViewModel(p)).ToList();
-        Entradas = _platoService.PorCategoria("Entrada").Select(p => new MenuItemViewModel(p)).ToList();
-        Postres = _platoService.PorCategoria("Postre").Select(p => new MenuItemViewModel(p)).ToList();
-        Bebidas = _platoService.PorCategoria("Bebida").Select(p => new MenuItemViewModel(p)).ToList();
+        PlatosFuertes = _platoService.PorCategoria("Plato fuerte").Select(p => new MenuItemViewModel(p)).ToDoublyLinkedList();
+        Entradas = _platoService.PorCategoria("Entrada").Select(p => new MenuItemViewModel(p)).ToDoublyLinkedList();
+        Postres = _platoService.PorCategoria("Postre").Select(p => new MenuItemViewModel(p)).ToDoublyLinkedList();
+        Bebidas = _platoService.PorCategoria("Bebida").Select(p => new MenuItemViewModel(p)).ToDoublyLinkedList();
 
         CantidadEnCarrito = _cart.CantidadItems;
 
